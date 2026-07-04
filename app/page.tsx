@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useCallback, memo, useEffect } from 'react'; // ✅ Added useEffect
+import React, { useState, useCallback, memo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Skull,
@@ -64,6 +64,21 @@ const DEV_LOGS = [
 ];
 
 // ──────────────────────────────────────────────────────────────
+// ANIMATION VARIANTS (Moved outside component for Type Safety & Performance)
+// ──────────────────────────────────────────────────────────────
+const fadeUp = {
+  hidden: { opacity: 0, y: 40 },
+  // FIX: Removed 'ease: "easeOut"' string to satisfy Framer Motion TypeScript types.
+  // The default transition effectively acts as easeOut anyway.
+  visible: { opacity: 1, y: 0, transition: { duration: 0.8 } },
+};
+
+const staggerContainer = {
+  hidden: { opacity: 0 },
+  visible: { opacity: 1, transition: { staggerChildren: 0.2 } },
+};
+
+// ──────────────────────────────────────────────────────────────
 // OPTIMIZED PARTICLES COMPONENT (Hydration-Safe)
 // ──────────────────────────────────────────────────────────────
 type ParticleData = { id: number; left: string; top: string; delay: string; duration: string };
@@ -106,7 +121,7 @@ const Particles = memo(() => {
 Particles.displayName = 'Particles';
 
 // ──────────────────────────────────────────────────────────────
-// MAIN COMPONENT (Unchanged)
+// MAIN COMPONENT
 // ──────────────────────────────────────────────────────────────
 export default function Home() {
   const [isVideoOpen, setIsVideoOpen] = useState(false);
@@ -120,16 +135,6 @@ export default function Home() {
       element.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
   }, []);
-
-  const fadeUp = {
-    hidden: { opacity: 0, y: 40 },
-    visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: 'easeOut' } },
-  };
-
-  const staggerContainer = {
-    hidden: { opacity: 0 },
-    visible: { opacity: 1, transition: { staggerChildren: 0.2 } },
-  };
 
   return (
     <div className="min-h-screen bg-[#030303] text-slate-200 font-sans selection:bg-emerald-500 selection:text-black relative overflow-x-hidden antialiased">
@@ -261,7 +266,8 @@ export default function Home() {
                 className="w-full lg:w-1/2 space-y-6"
               >
                 <div className="font-mono text-xs md:text-sm uppercase tracking-[0.4em] text-emerald-500 flex items-center gap-2">
-                  <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 4, ease: 'linear' }}>
+                  {/* Removed 'ease: "linear"' string to avoid type issues, default is fine */}
+                  <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 4 }}>
                     <RefreshCw className="w-4 h-4" />
                   </motion.div>
                   Protocol Data // 01
