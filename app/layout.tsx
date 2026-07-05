@@ -12,21 +12,81 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const siteUrl = "https://rotfall.game";
+
 export const metadata: Metadata = {
-  title: 'Rotfall | Cooperative Survival Horror',
-  description: 'Survive the unimaginable in Rotfall. A 2-4 player open-world horror experience with dynamic anomalies, sanity mechanics, and brutal purges.',
+  metadataBase: new URL(siteUrl),
+  title: "Rotfall | Cooperative Survival Horror",
+  description:
+    "Survive the unimaginable in Rotfall. A 2-4 player open-world horror experience with dynamic anomalies, sanity mechanics, and brutal purges.",
+  keywords: [
+    "Rotfall",
+    "survival horror",
+    "co-op horror game",
+    "open world horror",
+    "2-4 player co-op",
+    "indie horror game",
+    "procedural horror",
+    "sanity mechanics",
+    "Rotfall game",
+  ],
   openGraph: {
-    title: 'Rotfall',
-    description: 'Pre-Alpha v0.4.2 | Cooperative Survival Horror',
-    url: 'https://rotfall.game',
-    siteName: 'Rotfall',
-    images: [{ url: '/og-image.jpg', width: 1200, height: 630, alt: 'Rotfall Key Art' }],
-    locale: 'en_US',
-    type: 'website',
+    title: "Rotfall | Cooperative Survival Horror",
+  description:
+    "Pre-Alpha v0.4.2 | Cooperative Survival Horror – Scavenge, Reinforce, Endure.",
+  url: siteUrl,
+  siteName: "Rotfall",
+    locale: "en_US",
+    type: "website",
   },
-  twitter: { card: 'summary_large_image', title: 'Rotfall', description: 'Survive the unimaginable.' },
-  robots: { index: true, follow: true },
-}
+  twitter: {
+    card: "summary_large_image",
+    title: "Rotfall",
+    description:
+      "Survive the unimaginable. A 2-4 player open-world cooperative horror experience.",
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
+  alternates: {
+    canonical: siteUrl,
+  },
+  verification: {
+    // Add your Google Search Console verification meta tag value here
+    // google: "YOUR_VERIFICATION_CODE",
+  },
+};
+
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "VideoGame",
+  name: "Rotfall",
+  description:
+    "A 2-4 player open-world cooperative survival horror experience with dynamic anomalies, sanity mechanics, and brutal purges.",
+  url: siteUrl,
+  applicationCategory: "Game",
+  operatingSystem: "Windows",
+  author: {
+    "@type": "Organization",
+    name: "Rotfall Development",
+  },
+  genre: ["Survival Horror", "Co-op", "Open World"],
+  gamePlatform: "Windows",
+  numberOfPlayers: {
+    "@type": "QuantitativeValue",
+    minValue: 2,
+    maxValue: 4,
+  },
+};
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -37,6 +97,12 @@ export default function RootLayout({
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
+      <head>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
+      </head>
       <body className="min-h-full flex flex-col">{children}</body>
     </html>
   );
