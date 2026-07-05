@@ -1,14 +1,6 @@
-import type { MetadataRoute } from 'next'
+// app/sitemap.ts
+import { MetadataRoute } from 'next';
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = 'https://rotfall.game'
-
-  return [
-    {
-      url: baseUrl,
-      lastModified: new Date(),
-      changeFrequency: 'weekly',
-      priority: 1,
-    },
-  ]
+  return [{ url: 'https://rotfall.xyz', lastModified: new Date(), changeFrequency: 'weekly', priority: 1 }];
 }

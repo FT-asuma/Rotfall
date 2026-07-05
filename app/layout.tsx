@@ -12,13 +12,19 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-const siteUrl = "https://rotfall.game";
+const siteUrl = "https://rotfall.xyz";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: "Rotfall | Cooperative Survival Horror",
   description:
     "Survive the unimaginable in Rotfall. A 2-4 player open-world horror experience with dynamic anomalies, sanity mechanics, and brutal purges.",
+  // 👇 ADD THE ICONS FIELD HERE
+  icons: {
+    icon: "/favicon.ico",
+    shortcut: "/favicon.ico",
+    apple: "/apple-touch-icon.png",
+  },
   keywords: [
     "Rotfall",
     "survival horror",
@@ -32,10 +38,10 @@ export const metadata: Metadata = {
   ],
   openGraph: {
     title: "Rotfall | Cooperative Survival Horror",
-  description:
-    "Pre-Alpha v0.4.2 | Cooperative Survival Horror – Scavenge, Reinforce, Endure.",
-  url: siteUrl,
-  siteName: "Rotfall",
+    description:
+      "Pre-Alpha v0.4.2 | Cooperative Survival Horror – Scavenge, Reinforce, Endure.",
+    url: siteUrl,
+    siteName: "Rotfall",
     locale: "en_US",
     type: "website",
   },
@@ -60,7 +66,6 @@ export const metadata: Metadata = {
     canonical: siteUrl,
   },
   verification: {
-    // Add your Google Search Console verification meta tag value here
     // google: "YOUR_VERIFICATION_CODE",
   },
 };
