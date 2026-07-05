@@ -1,3 +1,4 @@
+// components/csr.tsx
 "use client";
 import React, { useState, useCallback, memo, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -13,14 +14,15 @@ import {
   Play,
   ShieldAlert,
   X,
+  Menu,
 } from "lucide-react";
-
 
 const SPECIMENS = [
   {
     id: '#089-STK',
     className: 'CLASS IV // STALKER',
     color: 'emerald',
+    rgb: '16,185,129', // ✅ ADDED: For safe inline styling
     title: 'The Blight Stalker',
     desc: 'Operates exclusively within obscured tree lines. Avoids direct fire by shifting vectors instantly. Emits a mechanical clicking sound just before lunging.',
   },
@@ -28,6 +30,7 @@ const SPECIMENS = [
     id: '#412-RPT',
     className: 'CLASS VI // APEX',
     color: 'red',
+    rgb: '239,68,68', // ✅ ADDED: For safe inline styling
     title: 'The Carrion Titan',
     desc: 'A hulking, multi-limbed atmospheric entity targeting core base infrastructure. Requires coordinated heavy ammunition deployment to safely bring down.',
   },
@@ -50,8 +53,6 @@ const DEV_LOGS = [
 
 const fadeUp = {
   hidden: { opacity: 0, y: 40 },
-  // FIX: Removed 'ease: "easeOut"' string to satisfy Framer Motion TypeScript types.
-  // The default transition effectively acts as easeOut anyway.
   visible: { opacity: 1, y: 0, transition: { duration: 0.8 } },
 };
 
@@ -69,13 +70,12 @@ type ParticleData = {
 };
 
 const Particles = memo(() => {
-  // ✅ Start with empty array to match SSR output
   const [particles, setParticles] = useState<ParticleData[]>([]);
 
   useEffect(() => {
-    // ✅ Generate random positions only on the client after mount
+    // ✅ IMPROVED: Reduced count from 45 to 25 for better mobile performance
     setParticles(
-      Array.from({ length: 45 }, (_, i) => ({
+      Array.from({ length: 25 }, (_, i) => ({
         id: i,
         left: `${Math.random() * 100}%`,
         top: `${Math.random() * 100}%`,
@@ -90,13 +90,12 @@ const Particles = memo(() => {
       {particles.map((p) => (
         <div
           key={p.id}
-          className="absolute w-[3px] h-[3px] rounded-full bg-emerald-500/20 blur-[2px] animate-pulse"
+          className="absolute w-[2px] h-[2px] rounded-full bg-emerald-500/30 animate-pulse"
           style={{
             left: p.left,
             top: p.top,
             animationDelay: p.delay,
             animationDuration: p.duration,
-            willChange: "opacity, transform",
           }}
         />
       ))}
@@ -105,7 +104,8 @@ const Particles = memo(() => {
 });
 Particles.displayName = "Particles";
 
-export const CSR = () => {
+// ✅ RENAMED: CSR -> Hero for clarity (kept all internal logic)
+export const Hero = () => {
   const [isVideoOpen, setIsVideoOpen] = useState(false);
   return (
     <>
@@ -184,6 +184,7 @@ export const CSR = () => {
                 >
                   <X className="w-5 h-5" />
                 </button>
+                {/* WARNING: Replace dQw4w9WgXcQ with your actual YouTube Trailer ID */}
                 <iframe
                   className="absolute inset-0 w-full h-full"
                   src="https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1&mute=1&rel=0&modestbranding=1"
@@ -194,7 +195,6 @@ export const CSR = () => {
                   loading="lazy"
                   referrerPolicy="strict-origin-when-cross-origin"
                 />
-                {/* NOTE: Replace dQw4w9WgXcQ with your actual trailer ID before production */}
               </div>
               <button
                 type="button"
@@ -218,41 +218,20 @@ const FIELD_MANUAL = [
 ];
 
 const LOOP_STEPS = [
-  {
-    step: "01",
-    title: "Scavenge & Secure",
-    desc: "Harvest vital tech fragments and raw ammo caches from hostile domains.",
-  },
-  {
-    step: "02",
-    title: "Reinforce Node",
-    desc: "Fortify grid outposts and construct barricades before the daylight dies.",
-  },
-  {
-    step: "03",
-    title: "Endure the Purge",
-    desc: "Defend against non-linear waves of otherworldly horrors that morph to counter you.",
-  },
+  { step: "01", title: "Scavenge & Secure", desc: "Harvest vital tech fragments and raw ammo caches from hostile domains." },
+  { step: "02", title: "Reinforce Node", desc: "Fortify grid outposts and construct barricades before the daylight dies." },
+  { step: "03", title: "Endure the Purge", desc: "Defend against non-linear waves of otherworldly horrors that morph to counter you." },
 ];
 
 export const Loop = () => {
   return (
     <div className="space-y-4 pt-6">
       {LOOP_STEPS.map((item, idx) => (
-        <div
-          key={idx}
-          className="flex flex-col sm:flex-row gap-4 p-5 md:p-6 border border-emerald-950/60 rounded-xl bg-[#030303] hover:border-emerald-500/30 transition-colors"
-        >
-          <div className="text-emerald-500 font-mono font-bold text-xl">
-            {item.step}/
-          </div>
+        <div key={idx} className="flex flex-col sm:flex-row gap-4 p-5 md:p-6 border border-emerald-950/60 rounded-xl bg-[#030303] hover:border-emerald-500/30 transition-colors">
+          <div className="text-emerald-500 font-mono font-bold text-xl">{item.step}/</div>
           <div>
-            <h4 className="text-slate-200 font-bold uppercase text-lg">
-              {item.title}
-            </h4>
-            <p className="text-slate-500 text-sm md:text-base mt-2">
-              {item.desc}
-            </p>
+            <h4 className="text-slate-200 font-bold uppercase text-lg">{item.title}</h4>
+            <p className="text-slate-500 text-sm md:text-base mt-2">{item.desc}</p>
           </div>
         </div>
       ))}
@@ -261,6 +240,8 @@ export const Loop = () => {
 };
 
 export const Nav = () => {
+  const [isMobileOpen, setIsMobileOpen] = useState(false);
+
   const handleScroll = useCallback((e: React.MouseEvent<HTMLAnchorElement>) => {
     e.preventDefault();
     const targetId = e.currentTarget.getAttribute('href')?.substring(1);
@@ -268,162 +249,205 @@ export const Nav = () => {
     const element = document.getElementById(targetId);
     if (element) {
       element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      setIsMobileOpen(false); // Close mobile menu on click
     }
   }, []);
-  return (
-    <nav className="hidden lg:flex items-center gap-8 font-mono text-xs tracking-widest text-slate-400" aria-label="Main navigation">
-      <a href="#loop" onClick={handleScroll} className="hover:text-emerald-400 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 rounded">01 / The Loop</a>
-      <a href="#manual" onClick={handleScroll} className="hover:text-emerald-400 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 rounded">02 / Field Manual</a>
-      <a href="#specimens" onClick={handleScroll} className="hover:text-emerald-400 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 rounded">03 / Specimens</a>
-      <a href="#devlog" onClick={handleScroll} className="hover:text-emerald-400 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 rounded">04 / Dev Log</a>
-    </nav>
 
-  )
+  // ✅ ADDED: Hook up the "Terminal Access" button to open mobile menu
+  useEffect(() => {
+    const btn = document.getElementById('terminal-access-btn');
+    if (btn) {
+      btn.addEventListener('click', () => setIsMobileOpen(prev => !prev));
+    }
+    return () => {
+      if (btn) btn.removeEventListener('click', () => setIsMobileOpen(prev => !prev));
+    }
+  }, []);
+
+  return (
+    <>
+      <nav className="hidden lg:flex items-center gap-8 font-mono text-xs tracking-widest text-slate-400" aria-label="Main navigation">
+        <a href="#loop" onClick={handleScroll} className="hover:text-emerald-400 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 rounded">01 / The Loop</a>
+        <a href="#manual" onClick={handleScroll} className="hover:text-emerald-400 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 rounded">02 / Field Manual</a>
+        <a href="#specimens" onClick={handleScroll} className="hover:text-emerald-400 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 rounded">03 / Specimens</a>
+        <a href="#devlog" onClick={handleScroll} className="hover:text-emerald-400 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 rounded">04 / Dev Log</a>
+      </nav>
+
+      {/* ✅ ADDED: Mobile Menu Overlay */}
+      <AnimatePresence>
+        {isMobileOpen && (
+          <motion.div 
+            initial={{ opacity: 0, y: -20 }} 
+            animate={{ opacity: 1, y: 0 }} 
+            exit={{ opacity: 0, y: -20 }}
+            className="fixed inset-0 z-40 bg-[#030303]/95 backdrop-blur-lg pt-24 px-8 flex flex-col items-center justify-center gap-8 lg:hidden"
+          >
+            <button onClick={() => setIsMobileOpen(false)} className="absolute top-5 right-5 text-emerald-400"><X className="w-6 h-6" /></button>
+            <a href="#loop" onClick={handleScroll} className="font-mono text-2xl tracking-widest text-slate-300 hover:text-emerald-400 transition-colors">01 / LOOP</a>
+            <a href="#manual" onClick={handleScroll} className="font-mono text-2xl tracking-widest text-slate-300 hover:text-emerald-400 transition-colors">02 / MANUAL</a>
+            <a href="#specimens" onClick={handleScroll} className="font-mono text-2xl tracking-widest text-slate-300 hover:text-emerald-400 transition-colors">03 / SPECIMENS</a>
+            <a href="#devlog" onClick={handleScroll} className="font-mono text-2xl tracking-widest text-slate-300 hover:text-emerald-400 transition-colors">04 / DEV LOG</a>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </>
+  );
 }
 
 export const Main = () => {
-  return <main>
-    <CSR />
-    {/* SECTION 1: THE LOOP */}
-    <section id="loop" className="relative z-10 px-4 md:px-8 py-24 md:py-40 bg-[#050505] scroll-mt-[80px]">
-      <div className="max-w-7xl mx-auto">
-        <div className="flex flex-col lg:flex-row gap-16 items-center">
-          <motion.div
-            initial="hidden" whileInView="visible" viewport={{ once: true, margin: '-100px' }} variants={fadeUp}
-            className="w-full lg:w-1/2 space-y-6"
-          >
-            <div className="font-mono text-xs md:text-sm uppercase tracking-[0.4em] text-emerald-500 flex items-center gap-2">
-              {/* Removed 'ease: "linear"' string to avoid type issues, default is fine */}
-              <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 4 }}>
-                <RefreshCw className="w-4 h-4" />
+  return (
+    <main>
+      <Hero />
+      
+      {/* SECTION 1: THE LOOP */}
+      {/* ✅ IMPROVED: Added subtle background texture instead of image */}
+      <section id="loop" className="relative z-10 px-4 md:px-8 py-24 md:py-40 bg-[#050505] scroll-mt-[80px] overflow-hidden">
+        <div className="absolute inset-0 opacity-5" style={{backgroundImage: 'radial-gradient(circle at 50% 0%, rgba(16,185,129,0.8), transparent 70%)'}} aria-hidden="true"></div>
+        <div className="max-w-7xl mx-auto relative z-10">
+          <div className="flex flex-col lg:flex-row gap-16 items-center">
+            <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: '-100px' }} variants={fadeUp} className="w-full lg:w-1/2 space-y-6">
+              <div className="font-mono text-xs md:text-sm uppercase tracking-[0.4em] text-emerald-500 flex items-center gap-2">
+                <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 4 }}>
+                  <RefreshCw className="w-4 h-4" />
+                </motion.div>
+                Protocol Data // 01
+              </div>
+              <h2 className="text-4xl md:text-6xl font-black tracking-tight uppercase">The Survival Cycle</h2>
+              <p className="text-slate-400 text-base md:text-lg leading-relaxed">
+                In <span className="text-emerald-400 font-semibold">Rotfall</span>, progress is violently extracted from the environment. The gameplay loop demands tight synergy and unyielding resource management:
+              </p>
+              <Loop />
+            </motion.div>
+
+            <motion.div initial={{ opacity: 0, x: 50 }} whileInView={{ opacity: 1, x: 0 }} transition={{ duration: 0.8 }} viewport={{ once: true }} className="w-full lg:w-1/2">
+              <div className="p-8 md:p-12 border border-emerald-500/20 rounded-3xl bg-gradient-to-br from-[#0a1a12] to-[#030303] relative overflow-hidden group shadow-[0_0_40px_rgba(16,185,129,0.05)]">
+                <div className="absolute top-0 right-0 p-4 font-mono text-8xl md:text-[12rem] font-black text-emerald-950/20 select-none leading-none opacity-50" aria-hidden="true">LOOP</div>
+                <div className="relative z-10 space-y-8">
+                  <div className="w-16 h-16 bg-emerald-500/10 rounded-2xl flex items-center justify-center border border-emerald-500/30 text-emerald-400">
+                    <ShieldAlert className="w-8 h-8" />
+                  </div>
+                  <h3 className="text-3xl font-bold uppercase tracking-tight text-white">Cooperative Synergy</h3>
+                  <p className="text-slate-400 text-base md:text-lg leading-relaxed">
+                    Splitting up guarantees elimination. Built meticulously for 2-4 players, you must synchronize your radar trackers and manage collective sanity to survive the night cycle.
+                  </p>
+                  <div className="h-px bg-emerald-900/40 w-full my-6" aria-hidden="true" />
+                  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center text-xs md:text-sm font-mono text-emerald-500 gap-2">
+                    <span className="bg-emerald-950/50 px-3 py-1 rounded">THREAT MATRIX: CRITICAL</span>
+                    <span>OP_STATUS // ALIVE</span>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        </div>
+      </section>
+
+      {/* SECTION 2: FIELD MANUAL */}
+      {/* ✅ IMPROVED: Added subtle grid background instead of image */}
+      <section id="manual" className="relative z-10 px-4 md:px-8 py-24 md:py-40 border-y border-emerald-950/40 scroll-mt-[80px] overflow-hidden" style={{background: 'linear-gradient(#070707, #070707), linear-gradient(90deg, rgba(16,185,129,0.03) 1px, transparent 1px), linear-gradient(rgba(16,185,129,0.03) 1px, transparent 1px)', backgroundSize: '100% 100%, 40px 40px, 40px 40px'}}>
+        <div className="max-w-7xl mx-auto relative z-10">
+          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} className="text-center max-w-3xl mx-auto mb-16 md:mb-24 space-y-4">
+            <div className="font-mono text-xs md:text-sm uppercase tracking-[0.4em] text-emerald-500 flex items-center justify-center gap-2">
+              <Terminal className="w-4 h-4" /> Tactical Operations // 02
+            </div>
+            <h2 className="text-4xl md:text-6xl font-black tracking-tight uppercase">Field Operations Manual</h2>
+            <p className="text-slate-400 text-lg md:text-xl">Master the environmental controls critical to navigating the exclusion vectors.</p>
+          </motion.div>
+
+          <motion.div variants={staggerContainer} initial="hidden" whileInView="visible" viewport={{ once: true, margin: '-50px' }} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+            {FIELD_MANUAL.map((feature, idx) => (
+              <motion.div key={idx} variants={fadeUp} className="p-8 md:p-10 border border-emerald-950/60 rounded-2xl bg-[#030303]/80 backdrop-blur-sm hover:bg-[#050a08] hover:border-emerald-500/40 transition-all duration-500 group shadow-lg">
+                <feature.icon className="w-12 h-12 md:w-14 md:h-14 mb-8 text-emerald-800 group-hover:text-emerald-400 transition-colors duration-500" />
+                <h3 className="text-2xl font-bold uppercase mb-4 text-slate-100">{feature.title}</h3>
+                <p className="text-slate-400 text-base leading-relaxed">{feature.desc}</p>
               </motion.div>
-              Protocol Data // 01
-            </div>
-            <h2 className="text-4xl md:text-6xl font-black tracking-tight uppercase">The Survival Cycle</h2>
-            <p className="text-slate-400 text-base md:text-lg leading-relaxed">
-              In <span className="text-emerald-400 font-semibold">Rotfall</span>, progress is violently extracted from the environment. The gameplay loop demands tight synergy and unyielding resource management:
-            </p>
-
-            <Loop />
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, x: 50 }} whileInView={{ opacity: 1, x: 0 }} transition={{ duration: 0.8 }} viewport={{ once: true }}
-            className="w-full lg:w-1/2"
-          >
-            <div className="p-8 md:p-12 border border-emerald-500/20 rounded-3xl bg-gradient-to-br from-[#0a1a12] to-[#030303] relative overflow-hidden group shadow-[0_0_40px_rgba(16,185,129,0.05)]">
-              <div className="absolute top-0 right-0 p-4 font-mono text-8xl md:text-[12rem] font-black text-emerald-950/20 select-none leading-none opacity-50" aria-hidden="true">LOOP</div>
-              <div className="relative z-10 space-y-8">
-                <div className="w-16 h-16 bg-emerald-500/10 rounded-2xl flex items-center justify-center border border-emerald-500/30 text-emerald-400">
-                  <ShieldAlert className="w-8 h-8" />
-                </div>
-                <h3 className="text-3xl font-bold uppercase tracking-tight text-white">Cooperative Synergy</h3>
-                <p className="text-slate-400 text-base md:text-lg leading-relaxed">
-                  Splitting up guarantees elimination. Built meticulously for 2-4 players, you must synchronize your radar trackers and manage collective sanity to survive the night cycle.
-                </p>
-                <div className="h-px bg-emerald-900/40 w-full my-6" aria-hidden="true" />
-                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center text-xs md:text-sm font-mono text-emerald-500 gap-2">
-                  <span className="bg-emerald-950/50 px-3 py-1 rounded">THREAT MATRIX: CRITICAL</span>
-                  <span>OP_STATUS // ALIVE</span>
-                </div>
-              </div>
-            </div>
+            ))}
           </motion.div>
         </div>
-      </div>
-    </section>
+      </section>
 
-    {/* SECTION 2: FIELD MANUAL */}
-    <section id="manual" className="relative z-10 px-4 md:px-8 py-24 md:py-40 bg-[#070707] border-y border-emerald-950/40 scroll-mt-[80px]">
-      <div className="max-w-7xl mx-auto">
-        <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} className="text-center max-w-3xl mx-auto mb-16 md:mb-24 space-y-4">
-          <div className="font-mono text-xs md:text-sm uppercase tracking-[0.4em] text-emerald-500 flex items-center justify-center gap-2">
-            <Terminal className="w-4 h-4" /> Tactical Operations // 02
-          </div>
-          <h2 className="text-4xl md:text-6xl font-black tracking-tight uppercase">Field Operations Manual</h2>
-          <p className="text-slate-400 text-lg md:text-xl">Master the environmental controls critical to navigating the exclusion vectors.</p>
-        </motion.div>
+      {/* SECTION 3: SPECIMENS */}
+      <section id="specimens" className="relative z-10 px-4 md:px-8 py-24 md:py-40 bg-[#030303] overflow-hidden scroll-mt-[80px]">
+        <div className="absolute inset-0 z-0 bg-cover bg-center opacity-10 mix-blend-color-dodge" style={{ backgroundImage: "url('https://images.unsplash.com/photo-1550684848-fac1c5b4e853?q=80&w=2070&auto=format&fit=crop')" }} aria-hidden="true" />
 
-
-        <motion.div variants={staggerContainer} initial="hidden" whileInView="visible" viewport={{ once: true, margin: '-50px' }} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
-          {FIELD_MANUAL.map((feature, idx) => (
-            <motion.div key={idx} variants={fadeUp} className="p-8 md:p-10 border border-emerald-950/60 rounded-2xl bg-[#030303] hover:bg-[#050a08] hover:border-emerald-500/40 transition-all duration-500 group shadow-lg">
-              <feature.icon className="w-12 h-12 md:w-14 md:h-14 mb-8 text-emerald-800 group-hover:text-emerald-400 transition-colors duration-500" />
-              <h3 className="text-2xl font-bold uppercase mb-4 text-slate-100">{feature.title}</h3>
-              <p className="text-slate-400 text-base leading-relaxed">{feature.desc}</p>
-            </motion.div>
-          ))}
-        </motion.div>
-      </div>
-    </section>
-
-    {/* SECTION 3: SPECIMENS */}
-    <section id="specimens" className="relative z-10 px-4 md:px-8 py-24 md:py-40 bg-[#030303] overflow-hidden scroll-mt-[80px]">
-      <div
-        className="absolute inset-0 z-0 bg-cover bg-center opacity-10 mix-blend-color-dodge"
-        style={{ backgroundImage: "url('https://images.unsplash.com/photo-1550684848-fac1c5b4e853?q=80&w=2070&auto=format&fit=crop')" }}
-        aria-hidden="true"
-      />
-
-      <div className="max-w-7xl mx-auto relative z-10">
-        <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} className="flex flex-col md:flex-row justify-between items-start md:items-end mb-16 md:mb-20 gap-6">
-          <div>
-            <div className="font-mono text-xs md:text-sm uppercase tracking-[0.4em] text-emerald-500 flex items-center gap-2">
-              <Eye className="w-4 h-4" /> Containment Logs // 03
+        <div className="max-w-7xl mx-auto relative z-10">
+          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} className="flex flex-col md:flex-row justify-between items-start md:items-end mb-16 md:mb-20 gap-6">
+            <div>
+              <div className="font-mono text-xs md:text-sm uppercase tracking-[0.4em] text-emerald-500 flex items-center gap-2">
+                <Eye className="w-4 h-4" /> Containment Logs // 03
+              </div>
+              <h2 className="text-4xl md:text-6xl font-black tracking-tight uppercase mt-4">Classified Specimens</h2>
             </div>
-            <h2 className="text-4xl md:text-6xl font-black tracking-tight uppercase mt-4">Classified Specimens</h2>
-          </div>
-          <p className="text-slate-400 max-w-md text-base md:text-lg">Anomalous lifeforms documented within sector bounds. High containment priority.</p>
-        </motion.div>
+            <p className="text-slate-400 max-w-md text-base md:text-lg">Anomalous lifeforms documented within sector bounds. High containment priority.</p>
+          </motion.div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {SPECIMENS.map((spec, idx) => (
-            <motion.div key={idx} initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} transition={{ delay: idx * 0.1 }} viewport={{ once: true }} className="p-6 md:p-8 border border-emerald-950/60 rounded-2xl bg-[#050505]/90 backdrop-blur-md flex flex-col sm:flex-row gap-8 hover:border-emerald-500/30 transition-all duration-300">
-              <div className={`w-full sm:w-48 h-48 bg-gradient-to-br from-${spec.color}-950/50 to-${spec.color}-900/10 border border-${spec.color}-500/20 rounded-xl flex items-center justify-center relative overflow-hidden shrink-0 shadow-inner`}>
-                <div className={`absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(${spec.color === 'emerald' ? '16,185,129' : '239,68,68'},0.15),transparent)] animate-pulse`} />
-                <span className={`font-mono text-${spec.color}-500 text-xs md:text-sm tracking-widest uppercase`}>No Visual // [X]</span>
-              </div>
-              <div className="space-y-4 w-full">
-                <div className="flex items-center justify-between">
-                  <span className={`font-mono text-xs font-bold text-${spec.color}-400 px-3 py-1 border border-${spec.color}-500/30 bg-${spec.color}-500/10 rounded`}>{spec.className}</span>
-                  <span className="text-xs font-mono text-slate-600">{spec.id}</span>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            {SPECIMENS.map((spec, idx) => (
+              <motion.div key={idx} initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} transition={{ delay: idx * 0.1 }} viewport={{ once: true }} className="p-6 md:p-8 border border-emerald-950/60 rounded-2xl bg-[#050505]/90 backdrop-blur-md flex flex-col sm:flex-row gap-8 hover:border-emerald-500/30 transition-all duration-300">
+                
+                {/* ✅ FIXED: Replaced dynamic Tailwind classes with safe inline styles */}
+                <div 
+                  className="w-full sm:w-48 h-48 rounded-xl flex items-center justify-center relative overflow-hidden shrink-0 shadow-inner"
+                  style={{
+                    background: `linear-gradient(to bottom right, rgba(${spec.rgb}, 0.2), rgba(${spec.rgb}, 0.05))`,
+                    border: `1px solid rgba(${spec.rgb}, 0.2)`
+                  }}
+                >
+                  <div className="absolute inset-0 animate-pulse" style={{background: `radial-gradient(circle at center, rgba(${spec.rgb},0.15), transparent)`}} />
+                  <span className="font-mono text-xs md:text-sm tracking-widest uppercase" style={{ color: `rgb(${spec.rgb})` }}>No Visual // [X]</span>
                 </div>
-                <h3 className="text-2xl font-bold text-slate-100 uppercase">{spec.title}</h3>
-                <p className="text-slate-400 text-sm md:text-base leading-relaxed">{spec.desc}</p>
-              </div>
-            </motion.div>
-          ))}
-        </div>
-      </div>
-    </section>
 
-    {/* SECTION 4: DEV LOG */}
-    <section id="devlog" className="relative z-10 px-4 md:px-8 py-24 md:py-40 border-t border-emerald-950/40 bg-gradient-to-b from-[#050505] to-[#030303] scroll-mt-[80px]">
-      <div className="max-w-5xl mx-auto">
-        <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} className="text-center mb-20 md:mb-28 space-y-4">
-          <div className="font-mono text-xs md:text-sm uppercase tracking-[0.4em] text-emerald-500 flex items-center justify-center gap-2">
-            <Binary className="w-4 h-4" /> Engineering Feeds // 04
+                <div className="space-y-4 w-full">
+                  <div className="flex items-center justify-between flex-wrap gap-2">
+                    <span 
+                      className="font-mono text-xs font-bold px-3 py-1 rounded"
+                      style={{ 
+                        color: `rgb(${spec.rgb})`, 
+                        border: `1px solid rgba(${spec.rgb}, 0.3)`,
+                        backgroundColor: `rgba(${spec.rgb}, 0.1)`
+                      }}
+                    >
+                      {spec.className}
+                    </span>
+                    <span className="text-xs font-mono text-slate-600">{spec.id}</span>
+                  </div>
+                  <h3 className="text-2xl font-bold text-slate-100 uppercase">{spec.title}</h3>
+                  <p className="text-slate-400 text-sm md:text-base leading-relaxed">{spec.desc}</p>
+                </div>
+              </motion.div>
+            ))}
           </div>
-          <h2 className="text-4xl md:text-6xl font-black tracking-tight uppercase">Development Log</h2>
-          <p className="text-slate-400 text-lg md:text-xl">Chronicles of technical systems engineering and implementation.</p>
-        </motion.div>
-
-        <div className="relative border-l border-emerald-900/50 ml-4 md:ml-40 space-y-16 md:space-y-24">
-          {DEV_LOGS.map((log, idx) => (
-            <motion.div key={idx} initial={{ opacity: 0, x: -20 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} className="relative pl-8 md:pl-12 group">
-              <div className={`absolute -left-[7px] top-2 w-3 h-3 rounded-full ${log.active ? 'bg-emerald-500 border border-black shadow-[0_0_15px_rgba(16,185,129,0.8)]' : 'bg-[#030303] border-2 border-emerald-800'}`} />
-              <div className="absolute -left-48 top-0 text-sm font-mono text-slate-500 hidden md:block w-32 text-right pt-1">
-                {log.label}
-              </div>
-              <div className="space-y-3">
-                <span className="text-xs font-mono text-emerald-400 tracking-wider block md:hidden">{log.label}</span>
-                <h3 className="text-2xl font-bold text-slate-100 uppercase">{log.title}</h3>
-                <p className="text-slate-400 text-base leading-relaxed max-w-2xl">{log.desc}</p>
-              </div>
-            </motion.div>
-          ))}
         </div>
-      </div>
-    </section>
-  </main>
+      </section>
+
+      {/* SECTION 4: DEV LOG */}
+      <section id="devlog" className="relative z-10 px-4 md:px-8 py-24 md:py-40 border-t border-emerald-950/40 bg-gradient-to-b from-[#050505] to-[#030303] scroll-mt-[80px]">
+        <div className="max-w-5xl mx-auto">
+          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} className="text-center mb-20 md:mb-28 space-y-4">
+            <div className="font-mono text-xs md:text-sm uppercase tracking-[0.4em] text-emerald-500 flex items-center justify-center gap-2">
+              <Binary className="w-4 h-4" /> Engineering Feeds // 04
+            </div>
+            <h2 className="text-4xl md:text-6xl font-black tracking-tight uppercase">Development Log</h2>
+            <p className="text-slate-400 text-lg md:text-xl">Chronicles of technical systems engineering and implementation.</p>
+          </motion.div>
+
+          <div className="relative border-l border-emerald-900/50 ml-4 md:ml-40 space-y-16 md:space-y-24">
+            {DEV_LOGS.map((log, idx) => (
+              <motion.div key={idx} initial={{ opacity: 0, x: -20 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} className="relative pl-8 md:pl-12 group">
+                <div className={`absolute -left-[7px] top-2 w-3 h-3 rounded-full ${log.active ? 'bg-emerald-500 border border-black shadow-[0_0_15px_rgba(16,185,129,0.8)]' : 'bg-[#030303] border-2 border-emerald-800'}`} />
+                <div className="absolute -left-48 top-0 text-sm font-mono text-slate-500 hidden md:block w-32 text-right pt-1">
+                  {log.label}
+                </div>
+                <div className="space-y-3">
+                  <span className="text-xs font-mono text-emerald-400 tracking-wider block md:hidden">{log.label}</span>
+                  <h3 className="text-2xl font-bold text-slate-100 uppercase">{log.title}</h3>
+                  <p className="text-slate-400 text-base leading-relaxed max-w-2xl">{log.desc}</p>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+    </main>
+  );
 }
