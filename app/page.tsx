@@ -1,12 +1,13 @@
 import { Main, Nav } from './components/csr';
 import { Analytics } from "@vercel/analytics/next"
-
+import { SpeedInsights } from "@vercel/speed-insights/next"
 export default function Home() {
 
   return (
     <div className="min-h-screen bg-[#030303] text-slate-200 font-sans selection:bg-emerald-500 selection:text-black relative overflow-x-hidden antialiased">
       {/* TOP TACTICAL HUD BAR */}
       <Analytics />
+      <SpeedInsights />
       <header className="fixed top-0 left-0 right-0 z-50 w-full px-4 md:px-8 py-4 border-b border-emerald-950/40 bg-[#030303]/80 backdrop-blur-md flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="w-2.5 h-2.5 bg-emerald-500 rounded-full animate-ping" />

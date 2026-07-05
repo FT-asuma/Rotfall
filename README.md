@@ -1,38 +1,94 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Rotfall — Landing Page
 
-## Getting Started
+A single-file React landing page for **Rotfall**, a co-op horror survival game. Dark, atmospheric theme with an animated ember/fog background, cursor-reactive lantern glow, and scroll-triggered reveals.
 
-First, run the development server:
+## Files
+
+| File | Purpose |
+|---|---|
+| `rotfall-landing.tsx` | **Use this one.** Fully typed TypeScript component for your actual project. |
+| `rotfall-landing-preview.jsx` | Same design with types stripped — only exists so the page could be live-previewed in chat. Not needed for your project. |
+
+## Tech stack / requirements
+
+- React 18+
+- TypeScript
+- [`lucide-react`](https://lucide.dev/) for icons
+- A bundler that handles CSS-in-JS via a `<style>` tag (Vite, Next.js, CRA all work fine — no CSS framework required, no Tailwind)
+- Internet access at build/runtime for the Google Fonts `@import` (Playfair Display, Manrope, Inter, JetBrains Mono) — self-host the fonts instead if you need it to work offline
+
+## Setup
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install lucide-react
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Drop `rotfall-landing.tsx` into your project (e.g. `src/components/RotfallLanding.tsx`) and render it:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```tsx
+import RotfallLanding from './components/RotfallLanding';
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+export default function App() {
+  return <RotfallLanding />;
+}
+```
 
-## Learn More
+## Known issue: `lucide-react` CommonJS/ESM error
 
-To learn more about Next.js, take a look at the following resources:
+If Vite throws something like:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```
+[vite] Named export 'Instagram' not found. The requested module 'lucide-react' is a CommonJS module...
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+This is a dependency resolution issue, not a code issue. Fix, in order of likelihood:
 
-## Deploy on Vercel
+1. **Clean reinstall** (usually fixes it):
+   ```bash
+   rm -rf node_modules package-lock.json
+   npm install
+   ```
+2. **Force Vite to pre-bundle it** — add to `vite.config.ts`:
+   ```ts
+   export default defineConfig({
+     optimizeDeps: { include: ['lucide-react'] },
+   });
+   ```
+   Then clear Vite's cache and restart: `rm -rf node_modules/.vite && npm run dev`
+3. **Check for duplicate installs** (common in monorepos):
+   ```bash
+   npm ls lucide-react
+   ```
+4. **Fallback workaround** if nothing else works:
+   ```ts
+   import pkg from 'lucide-react';
+   const { Instagram, MessageCircle } = pkg;
+   ```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## What's placeholder and needs replacing before launch
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
-# Rotfall
-# Rotfall
+- **Wishlist on Steam** buttons — currently `href="#"` with `preventDefault()`. Point these at your real Steam store page once it's live.
+- **Discord** button/icon — same, currently a placeholder `#` link. Add your real invite link.
+- **itch.io link** — currently points to `https://royaleyourdad.itch.io/`, your existing profile. Confirm this is the URL you want linked (e.g. if you'd rather link directly to the Backrooms: The Abyss page instead of the profile root).
+- **Copyright year** in the footer is hardcoded to 2026 — update as needed.
+
+## Structure overview
+
+- `ParticleField` — canvas-based ember animation, confined to the hero section. Automatically disables continuous motion for users with `prefers-reduced-motion` set.
+- `Reveal` — scroll-triggered fade/scale-in wrapper using `IntersectionObserver`, used around each section.
+- `MagneticLink` — wraps CTA buttons/links with a subtle cursor-following hover effect.
+- Sections: Hero → The Loop (timeline) → Field Manual (features) → Specimen Log → Dev Log → Follow/CTA → Footer.
+
+All copy is based on the actual v1 game scope (single underground facility, 2-4 players, one regular zombie type, one boss) — update the content directly in the JSX if the scope changes.
+
+## Customization
+
+All design tokens (colors, fonts) are defined as CSS custom properties at the top of the `<style>` block under `.rotfall-page`, e.g.:
+
+```css
+--amber: #e0a458;   /* primary accent / lantern glow */
+--blood: #c04252;   /* danger / classified accent */
+--bone: #f2ede1;    /* primary text */
+```
+
+Change these to retheme the whole page without touching component markup.
